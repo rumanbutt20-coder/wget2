@@ -1,0 +1,35 @@
+name: Build Wget2 for Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Wget2
+        uses: actions/checkout@v4
+        with:
+          repository: rockdaboot/wget2
+          submodules: recursive
+
+      - name: Build Windows executable
+        run: |
+          docker build \
+            -t wget2/win32/static \
+            -f contrib/Dockerfile.win32.static \
+            contrib
+
+      - name: Extract wget2.exe
+        run: |
+          docker run --rm \
+            -v "$PWD:/tmp" \
+            wget2/win32/static \
+            cp /usr/local/wget2/src/wget2.exe /tmp/wget2.exe
+
+      - name: Upload wget2.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: wget2-windows
+          path: wget2.exe
